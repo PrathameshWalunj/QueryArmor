@@ -1,4 +1,5 @@
 import os
+from tqdm import tqdm
 from payload_modifier import smart_tamper, generate_payloads
 
 def load_original_payloads(file_path):
@@ -19,10 +20,10 @@ original_file = os.path.join(project_root, "original_sqli_payloads.txt")
 original_payloads = load_original_payloads(original_file)
 
 # Transform original payloads
-transformed_payloads = [smart_tamper(payload) for payload in original_payloads]
+transformed_payloads = [smart_tamper(payload) for payload in tqdm(original_payloads, desc="Transforming Payloads")]
 
 # Generate additional payloads
-additional_payloads = generate_payloads(5000)  # Generate 5000 additional payloads
+additional_payloads = generate_payloads(7000)  # Generate 5000 additional payloads
 
 # Combine all payloads
 all_payloads = original_payloads + transformed_payloads + additional_payloads

