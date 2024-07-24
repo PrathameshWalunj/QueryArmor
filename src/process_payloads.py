@@ -23,7 +23,7 @@ original_payloads = load_original_payloads(original_file)
 transformed_payloads = [smart_tamper(payload) for payload in tqdm(original_payloads, desc="Transforming Payloads")]
 
 # Generate additional payloads
-additional_payloads = generate_payloads(7000)  # Generate 5000 additional payloads
+additional_payloads = generate_payloads(7000)  
 
 # Combine all payloads
 all_payloads = original_payloads + transformed_payloads + additional_payloads

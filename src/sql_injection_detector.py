@@ -9,6 +9,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import seaborn as sns
+import joblib
 
 class SQLInjectionDetector:
     def __init__(self):
@@ -62,11 +63,15 @@ class SQLInjectionDetector:
             ['sql_keyword_count', 'special_char_ratio']
         )
 
-        return train_test_split(X, y, test_size=0.2, random_state=42)
+        return train_test_split(X, y, test_size=0.19, random_state=42)
 
     def train_model(self, X_train, y_train):
         self.model = RandomForestClassifier(n_estimators=500,max_depth=10, min_samples_split=5, random_state=42)
         self.model.fit(X_train, y_train)
+        model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')
+        os.makedirs(model_dir, exist_ok=True)
+        joblib.dump(self.model, os.path.join(model_dir, 'sqli_model.joblib'))
+        joblib.dump(self.vectorizer, os.path.join(model_dir, 'sqli_vectorizer.joblib'))
 
     def evaluate_model(self, X_test, y_test, df):
         y_pred = self.model.predict(X_test)
@@ -131,13 +136,8 @@ class SQLInjectionDetector:
         probability = self.model.predict_proba(vectorized_input)
         return "Malicious" if prediction[0] == 1 else "Safe", probability[0][prediction[0]]
    
-
-    def train_model(self, X, y):
-        self.model = RandomForestClassifier(n_estimators=500, max_depth=10, min_samples_split=5, random_state=42)
-        scores = cross_val_score(self.model, X, y, cv=5)
-        print(f"Cross-validation scores: {scores}")
-        print(f"Mean CV score: {scores.mean():.2f} (+/- {scores.std() * 2:.2f})")
-        self.model.fit(X, y)
+    
+  
 
 def main():
     detector = SQLInjectionDetector()
@@ -163,8 +163,17 @@ def main():
         "' OR '5'='5' /*",
         "1' and substring(@@version,2,1)=0;- -",
         "admin’ OR 1=1--; DROP TABLE users; --",
+        "Benchmark",
+        "BENCHMARK",
+        "version",
+        "Select",
+        " GET 0x56657273696F6E, @@6461746162617365;",
         "id=984 AND IF(SUBSTRING(version(),1,1)=5,SLEEP(10),null)",
-        "' UNION SELECT username, password FROM users--"
+        "' UNION SELECT username, password FROM users--",
+        "admin.benchmark@' AND 1=1.com",
+        "Sunglasses",
+        "DELAY"
+        
     ]
 
     for input_string in test_inputs:
