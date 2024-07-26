@@ -8,6 +8,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
+import re
 import seaborn as sns
 import joblib
 
@@ -63,17 +64,19 @@ class SQLInjectionDetector:
             ['sql_keyword_count', 'special_char_ratio']
         )
 
-        return train_test_split(X, y, test_size=0.19, random_state=42)
+        return X, y
 
-    def train_model(self, X_train, y_train):
-        self.model = RandomForestClassifier(n_estimators=500,max_depth=10, min_samples_split=5, random_state=42)
-        self.model.fit(X_train, y_train)
+    def train_model(self, X, y):
+        self.model = RandomForestClassifier(n_estimators=500, max_depth=10, min_samples_split=5, random_state=42)
+        self.model.fit(X, y)
         model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')
         os.makedirs(model_dir, exist_ok=True)
         joblib.dump(self.model, os.path.join(model_dir, 'sqli_model.joblib'))
-        joblib.dump(self.vectorizer, os.path.join(model_dir, 'sqli_vectorizer.joblib'))
+        joblib.dump(self.preprocessor, os.path.join(model_dir, 'sqli_preprocessor.joblib'))
 
     def evaluate_model(self, X_test, y_test, df):
+
+        print(f"Number of samples in test set: {len(y_test)}")
         y_pred = self.model.predict(X_test)
         print(classification_report(y_test, y_pred))
     
@@ -126,7 +129,35 @@ class SQLInjectionDetector:
         plt.tight_layout()
         plt.show()
 
+    
+    def contains_sql_injection_pattern(self,input_string):
+    # Convert to lowercase for case-insensitive matching
+        lower_input = input_string.lower()
+    
+    # List of common SQL injection patterns
+        patterns = [
+            r'\bor\s+\d+\s*=\s*\d+',  
+            r'\bunion\s+select',     
+            r"'\s*or\s+'?\d+'?\s*=\s*'?\d+'?",  
+            r';\s*drop\s+table',      
+            r';\s*delete\s+from',                         
+            r'/\*.*?\*/',             
+            r'xp_cmdshell',           
+            r'exec\s*\(',             
+            r'union\s+all\s+select',  
+            r'insert\s+into.\+values' 
+            r'\b(?:admin\s*or\s*\d+\s*=\s*\d+|\'(?:admin\s*or\s*\d+\s*=\s*\d+)\')'
+            r'\b(?:admin\s*or\s*\d+\s*=\s*\d+\s*--\s*)'
+    ]       
+    
+        return any(re.search(pattern, lower_input) for pattern in patterns)
+
+
     def predict(self, input_string):
+        
+        if self.contains_sql_injection_pattern(input_string):
+            return "Malicious", 1.0
+
         df = pd.DataFrame({'input': [input_string]})
         df['sql_keyword_count'] = df['input'].apply(lambda x: sum(keyword in x.upper() for keyword in ['SELECT', 'UNION', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'TABLE', 'FROM', 'WHERE']))
         df['special_char_ratio'] = df['input'].apply(lambda x: sum(c in set("'\"`;,.-=") for c in x) / len(x) if x else 0)
@@ -136,20 +167,39 @@ class SQLInjectionDetector:
         probability = self.model.predict_proba(vectorized_input)
         return "Malicious" if prediction[0] == 1 else "Safe", probability[0][prediction[0]]
    
+    def load_model(self, model_filename='sqli_model.joblib', preprocessor_filename='sqli_preprocessor.joblib'):
+        model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')
+        self.model = joblib.load(os.path.join(model_dir, model_filename))
+        self.preprocessor = joblib.load(os.path.join(model_dir, preprocessor_filename))
     
-  
+    def load_and_train_model(self):
+        df = self.load_data('safe_user_inputs.txt', 'transformed_sqli_payloads.txt')
+        X, y = self.preprocess_data(df)
+        self.train_model(X, y)
 
 def main():
+    
     detector = SQLInjectionDetector()
     
+    # Load data
     df = detector.load_data('safe_user_inputs.txt', 'transformed_sqli_payloads.txt')
-    X_train, X_test, y_train, y_test = detector.preprocess_data(df)
     
+    # Preprocess data
+    X, y = detector.preprocess_data(df)
+    
+    # Split the data manually
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.19, random_state=42)
+    
+    # Train the model
     detector.train_model(X_train, y_train)
+    
+    # Evaluate the model
     detector.evaluate_model(X_test, y_test, df)
+    
+    # Show feature importance
     detector.feature_importance()
 
-    # Test some inputs
+     # Test some inputs
     test_inputs = [
         "John Doe",
         "user@example.com",
@@ -165,6 +215,8 @@ def main():
         "admin’ OR 1=1--; DROP TABLE users; --",
         "Benchmark",
         "BENCHMARK",
+        "'OR 2=2",
+        "'OR 1=1",
         "version",
         "Select",
         " GET 0x56657273696F6E, @@6461746162617365;",
@@ -182,5 +234,9 @@ def main():
         print(f"Prediction: {prediction}")
         print(f"Confidence: {probability:.2f}")
         print()
+
+
 if __name__ == "__main__":
     main()
+
+   
