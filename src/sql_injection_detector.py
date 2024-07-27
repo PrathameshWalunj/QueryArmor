@@ -129,6 +129,7 @@ class SQLInjectionDetector:
         plt.tight_layout()
         plt.show()
 
+   
     
     def contains_sql_injection_pattern(self,input_string):
     # Convert to lowercase for case-insensitive matching
@@ -154,7 +155,7 @@ class SQLInjectionDetector:
 
 
     def predict(self, input_string):
-        
+        print(f"Debug: Predicting for input: {input_string}")
         if self.contains_sql_injection_pattern(input_string):
             return "Malicious", 1.0
 
@@ -224,7 +225,8 @@ def main():
         "' UNION SELECT username, password FROM users--",
         "admin.benchmark@' AND 1=1.com",
         "Sunglasses",
-        "DELAY"
+        "DELAY",
+        "'OR 100=100"
         
     ]
 
@@ -234,6 +236,9 @@ def main():
         print(f"Prediction: {prediction}")
         print(f"Confidence: {probability:.2f}")
         print()
+
+    
+
 
 
 if __name__ == "__main__":

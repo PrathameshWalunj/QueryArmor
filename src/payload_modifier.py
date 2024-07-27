@@ -2,6 +2,7 @@ import random
 import string
 import urllib.parse
 
+
 def randomize_case(query):
     return ''.join(random.choice([c.upper(), c.lower()]) for c in query)
 
