@@ -8,3 +8,6 @@ tqdm
 pyfiglet
 termcolor
 urllib3
+requests
+argparse
+scipy

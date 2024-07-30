@@ -53,8 +53,12 @@ class QueryArmorCLI(cmd.Cmd):
             self.xss_detector.load_model()
             self.sqli_detector.load_model()
             print(colored("Models loaded successfully.", 'green'))
+        except FileNotFoundError as fnf_error:
+            print(colored(f"File not found: {fnf_error}", 'red'))
         except Exception as e:
             print(colored(f"Error loading models: {e}", 'red'))
+            sys.exit(1)
+
 
     def get_project_root(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -183,10 +187,14 @@ class QueryArmorCLI(cmd.Cmd):
                     'payload': payload,
                     'status_code': response.status_code,
                     'response_time': end_time - start_time,
-                    'response_length': len(response.text)
+                    'response_length': len(response.text),
+                    'response_content': response.text[:2500]  
                 }
                 self.results.append(result)
                 print(colored(f"Tested: {payload[:30]}... - Status: {response.status_code}", 'cyan'))
+                print(colored("Response:", 'yellow'))
+                print(colored(result['response_content'], 'white'))
+                print(colored("---", 'yellow'))
                 time.sleep(self.delay)
             except requests.RequestException as e:
                 print(colored(f"Error testing {payload}: {str(e)}", 'red'))
@@ -207,7 +215,11 @@ class QueryArmorCLI(cmd.Cmd):
             print(colored(f"Status Code: {result['status_code']}", 'cyan'))
             print(colored(f"Response Time: {result['response_time']:.2f} seconds", 'cyan'))
             print(colored(f"Response Length: {result['response_length']}", 'cyan'))
+            print(colored("Response Content:", 'yellow'))
+            print(colored(result['response_content'], 'white'))
             print(colored("---", 'yellow'))
+
+  
 
     def do_clear_results(self, arg):
         """Clear test results"""
@@ -253,7 +265,7 @@ class QueryArmorCLI(cmd.Cmd):
             print(colored("Potential XSS detected.", 'red'))
             self.payload_type = 'xss'
         elif sqli_result == 'Malicious':
-            print(colored("Potential SQL Injection detected.", 'red'))
+            print(colored(f"Potential SQL Injection detected.(Confidence: {sqli_probability:.2f})", 'red'))
             self.payload_type = 'sqli'
         else:
             print(colored("Input appears safe. No specific vulnerabilities detected.", 'green'))
