@@ -120,9 +120,7 @@ class XSSDetector:
 
     def load_model(self, model_filename='xss_model.joblib', vectorizer_filename='xss_vectorizer.joblib'):
         model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')
-        print(f"Loading XSS model from {os.path.join(model_dir, model_filename)}")
         self.model = joblib.load(os.path.join(model_dir, model_filename))
-        print(f"Loading XSS vectorizer from {os.path.join(model_dir, vectorizer_filename)}")
         self.vectorizer = joblib.load(os.path.join(model_dir, vectorizer_filename))
 
 

@@ -53,11 +53,8 @@ class QueryArmorCLI(cmd.Cmd):
             self.xss_detector.load_model()
             self.sqli_detector.load_model()
             print(colored("Models loaded successfully.", 'green'))
-        except FileNotFoundError as fnf_error:
-            print(colored(f"File not found: {fnf_error}", 'red'))
         except Exception as e:
             print(colored(f"Error loading models: {e}", 'red'))
-            sys.exit(1)
 
 
     def get_project_root(self):
@@ -173,6 +170,7 @@ class QueryArmorCLI(cmd.Cmd):
 
         print(colored(f"Testing {len(self.payloads)} {self.payload_type.upper()} payloads against {self.endpoint}", 'yellow'))
         print(colored(f"Method: {self.method}, Delay: {self.delay} seconds", 'yellow'))
+        print(colored("Press Ctrl+C to stop the test at any time.", 'yellow'))
 
         for payload in self.payloads:
             try:

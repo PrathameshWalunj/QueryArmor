@@ -155,7 +155,7 @@ class SQLInjectionDetector:
 
 
     def predict(self, input_string):
-        print(f"Debug: Predicting for input: {input_string}")
+        
         if self.contains_sql_injection_pattern(input_string):
             return "Malicious", 1.0
 
@@ -170,11 +170,9 @@ class SQLInjectionDetector:
    
     def load_model(self, model_filename='sqli_model.joblib', preprocessor_filename='sqli_preprocessor.joblib'):
         model_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')
-        print(f"Loading SQLi model from {os.path.join(model_dir, model_filename)}")
         self.model = joblib.load(os.path.join(model_dir, model_filename))
-        print(f"Loading SQLi preprocessor from {os.path.join(model_dir, preprocessor_filename)}")
         self.preprocessor = joblib.load(os.path.join(model_dir, preprocessor_filename))
-        
+
     def load_and_train_model(self):
         df = self.load_data('safe_user_inputs.txt', 'transformed_sqli_payloads.txt')
         X, y = self.preprocess_data(df)
