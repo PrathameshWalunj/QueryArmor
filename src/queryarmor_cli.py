@@ -15,7 +15,7 @@ class QueryArmorCLI(cmd.Cmd):
     
     WARNING: This tool is designed for security testing purposes.
     Use responsibly and only on systems you have permission to test.
-    The developer is not responsible for any misuse or damage caused by this tool.
+    The developer is not responsible for any misuse/damage caused by this tool.
 
     Available modes:
     1. Quick Test (default): Use 'sqli <query>' or 'xss <query>' for quick testing
@@ -55,6 +55,7 @@ class QueryArmorCLI(cmd.Cmd):
             print(colored("Models loaded successfully.", 'green'))
         except Exception as e:
             print(colored(f"Error loading models: {e}", 'red'))
+            sys.exit(1)
 
 
     def get_project_root(self):
@@ -70,6 +71,21 @@ class QueryArmorCLI(cmd.Cmd):
         print(colored(f"Mode set to: {self.mode}", 'green'))
         if self.mode == 'exploit':
             self.select_payload_type()
+        elif self.mode == 'test':
+            self.print_test_mode_info()
+
+    def print_test_mode_info(self):
+        print(colored("\nTest Mode Information:", 'cyan'))
+        print(colored("- Analyze individual queries or input from files", 'cyan'))
+        print(colored("- Get detailed analysis for XSS and SQL Injection vulnerabilities", 'cyan'))
+        print(colored("- Use 'analyze <query>' to test a single query", 'cyan'))
+        print(colored("- Use 'analyze_file <filename>' to test queries from a file", 'cyan'))
+        print(colored("\nFile Analysis Tips:", 'cyan'))
+        print(colored("- Place your file in the same directory as the script, or", 'cyan'))
+        print(colored("- Provide a full path to the file when using 'analyze_file'", 'cyan'))
+        print(colored("- Example: analyze_file queries.txt", 'cyan'))
+        print(colored("- Example: analyze_file /home/user/documents/queries.txt", 'cyan'))
+
 
     def select_payload_type(self):
         """Prompt user to select payload type and provide usage information"""
@@ -203,6 +219,57 @@ class QueryArmorCLI(cmd.Cmd):
 
         print(colored("Testing completed. Use 'results' command to see full results.", 'green'))
 
+    def do_analyze(self, arg):
+        """Analyze a single query for vulnerabilities"""
+        if self.mode != 'test':
+            print(colored("Please enter test mode first using 'mode test'", 'red'))
+            return
+        if not arg:
+            print(colored("Please provide a query to analyze.", 'yellow'))
+            return
+        self._analyze_query(arg)
+
+    def do_analyze_file(self, arg):
+        """Analyze queries from a file"""
+        if self.mode != 'test':
+            print(colored("Please enter test mode first using 'mode test'", 'red'))
+            return
+        if not arg:
+            print(colored("Please provide a filename to analyze.", 'yellow'))
+            print(colored("You can use a relative path from the current directory or an absolute path.", 'cyan'))
+            return
+
+        try:
+            with open(arg, 'r') as file:
+                queries = file.readlines()
+            for query in queries:
+                print(colored(f"\nAnalyzing query: {query.strip()}", 'cyan'))
+                self._analyze_query(query.strip())
+        except FileNotFoundError:
+            print(colored(f"File not found: {arg}", 'red'))
+            print(colored("Make sure the file exists and the path is correct.", 'yellow'))
+            print(colored("You can place the file in the same directory as the script or provide a full path.", 'cyan'))
+
+    def _analyze_query(self, query):
+        """Internal method to analyze a single query"""
+        xss_result = self.xss_detector.predict(query)
+        sqli_result, sqli_probability = self.sqli_detector.predict(query)
+
+        print(colored("Query Analysis:", 'cyan'))
+        print(colored("Input:", 'yellow'), query)
+
+        xss_risk_color = 'red' if xss_result == 1 else 'green'
+        print(colored("XSS Risk:", 'yellow'), colored('High' if xss_result == 1 else 'Low', xss_risk_color))
+        sqli_risk_color = 'red' if sqli_result == 'Malicious' else 'green'
+        print(colored("SQL Injection Risk:", 'yellow'), colored('High' if sqli_result == 'Malicious' else 'Low', sqli_risk_color))
+        print(colored("SQL Injection Probability:(High/Low (^Risk)", 'yellow'), colored(f"{sqli_probability:.2f}", 'blue'))
+
+        if xss_result == 1 or sqli_result == 'Malicious':
+            print(colored("\nSuggestions:", 'yellow'))
+            print("- Implement input validation and sanitization")
+            print("- Use parameterized queries or prepared statements")
+            print("- Apply output encoding appropriate for the context")
+        
     def do_results(self, arg):
         """Display test results"""
         if not self.results:
