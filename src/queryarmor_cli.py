@@ -352,6 +352,9 @@ class QueryArmorCLI(cmd.Cmd):
             print(colored("- In exploit mode, set endpoint, method, and delay before testing", 'cyan'))
             print(colored("- Use 'sqli <query>' or 'xss <query>' for quick single query testing", 'cyan'))
 
+    def do_clear(self, arg=None):
+        """Clear the screen"""
+        os.system('cls' if os.name == 'nt' else 'clear')
 
     def do_quit(self, arg):
         """Exit the program"""
