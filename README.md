@@ -6,7 +6,8 @@
 QueryArmor™ is an advanced security tool designed to detect and prevent SQL injection and XSS attacks in web applications. Using machine learning algorithm and pattern recognition, QueryArmor™ offers a comprehensive solution for enhancing web application security.
 
 
-<img width="909" alt="Screenshot 2024-07-26 at 9 10 31 PM" src="https://github.com/user-attachments/assets/bd3ebf07-1692-47b5-9316-039dba9eee7f">
+<img width="1440" alt="Screenshot 2024-08-19 at 12 23 37 AM" src="https://github.com/user-attachments/assets/ea791cb5-24b9-46a0-9a43-1b817ac53d60">
+
 
 For the latest version and documentation visit our official website: [www.queryarmor.com](http://www.queryarmor.com)
 
